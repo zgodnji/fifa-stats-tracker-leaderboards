@@ -99,5 +99,6 @@
     <orderEntry type="library" name="Maven: com.kumuluz.ee.discovery:kumuluzee-discovery-consul:1.0.0" level="project" />
     <orderEntry type="library" name="Maven: com.kumuluz.ee.discovery:kumuluzee-discovery-common:1.0.0" level="project" />
     <orderEntry type="library" name="Maven: com.vdurmont:semver4j:2.0.2" level="project" />
+    <orderEntry type="library" name="Maven: com.googlecode.json-simple:json-simple:1.1" level="project" />
   </component>
 </module>
