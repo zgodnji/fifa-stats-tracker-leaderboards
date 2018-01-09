@@ -1,5 +1,5 @@
 kumuluzee:
-  name: games-service
+  name: leaderboards-service
   env:
     name: dev
   version: 1.0.0
