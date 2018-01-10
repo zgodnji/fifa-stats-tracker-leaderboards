@@ -14,9 +14,11 @@ import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -103,7 +105,7 @@ public class LeaderboardResource {
 
     @GET
     @Path("{gameId}/leaderboard")
-    public Response viewLeaderboardForGame() {
+    public Response viewLeaderboardForGame(@PathParam("gameId") String gameId) {
 
         System.out.println("=====================");
 
@@ -134,32 +136,103 @@ public class LeaderboardResource {
         response.append("}");
 
         System.out.println(response.toString());
+        ArrayList<String[]> leaderboard = new ArrayList<>();
+
         try {
 
             Object obj = JSONValue.parse(response.toString());
 
             JSONObject jsonObject = (JSONObject) obj;
-            System.out.println("-------------");
-            System.out.println(jsonObject);
 
-            /*String name = (String) jsonObject.get("name");
-            System.out.println(name);*/
-
-            System.out.println("--------------");
             // loop array
             JSONArray scores = (JSONArray) jsonObject.get("list");
-            System.out.println(scores);
+
 
             for (int i = 0; i < scores.size(); i++) {
-                System.out.println("++++++++++++");
-                System.out.println(i);
-                System.out.println(scores.get(i));
+                System.out.println("===================");
+                JSONObject score = (JSONObject) scores.get(i);
+                if (score.get("gameId").equals(gameId)) {
+                    // Get player ids
+                    String id1 = (String) score.get("user1Id");
+                    String id2 = (String) score.get("user2Id");
+                    // Add players to the leaderboard
+                    addPlayers(leaderboard, id1);
+                    addPlayers(leaderboard, id2);
+                    // Get player indices in the leaderboard arraylist
+                    int index1 = userExists(leaderboard, id1);
+                    int index2 = userExists(leaderboard, id2);
+                    // Get the score of the match
+                    long score1 = (long) score.get("user1Score");
+                    long score2 = (long) score.get("user2Score");
+                    // Add point on the leaderboard
+                    if (score1 > score2) {
+                        addPoints(leaderboard, index1, 3);
+                    } else if (score2 > score1) {
+                        addPoints(leaderboard, index2, 3);
+                    } else if (score1 == score2) {
+                        addPoints(leaderboard, index1, 1);
+                        addPoints(leaderboard, index2, 1);
+                    }
+
+                }
+                printLeaderboard(leaderboard);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         System.out.println("=====================");
-        return Response.noContent().build();
+
+        System.out.println(buildLeaderboardJson(leaderboard));
+
+        return Response.ok(buildLeaderboardJson(leaderboard)).build();
+    }
+
+    private ArrayList<String[]> addPlayers(ArrayList<String[]> leaderboard, String userId) {
+        if (userExists(leaderboard, userId) == -1) {
+            String[] newUser = new String[]{userId, "0"};
+            leaderboard.add(newUser);
+        }
+        return leaderboard;
+    }
+
+    private int userExists(ArrayList<String[]> leaderboard, String playerId) {
+
+        for (int i = 0; i < leaderboard.size(); i++) {
+            String[] player = leaderboard.get(i);
+            if (player[0].equals(playerId)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private ArrayList<String[]> addPoints(ArrayList<String[]> leaderboard, int index, int points) {
+        String userId = leaderboard.get(index)[0];
+        String newPoints = Integer.toString(Integer.parseInt(leaderboard.get(index)[1]) + points);
+        leaderboard.set(index, new String[]{userId, newPoints});
+        return leaderboard;
+    }
+
+    private void printLeaderboard(ArrayList<String[]> leaderboard) {
+        for (int i = 0; i < leaderboard.size(); i++) {
+            System.out.println("Player " + leaderboard.get(i)[0] + " has " + leaderboard.get(i)[1] + " points.");
+        }
+    }
+
+    private String buildLeaderboardJson(ArrayList<String[]> leaderboard) {
+        StringBuilder result = new StringBuilder();
+        result.append("[");
+        for (int i = 0; i < leaderboard.size(); i++) {
+            result.append("{\"player\": \"" + leaderboard.get(i)[0] + "\", \"points\": " + leaderboard.get(i)[1] + "}");
+
+            System.out.println("Index: " + (i + 1) + ", size: " + leaderboard.size());
+            if(leaderboard.size() > i + 1) {
+                result.append(",");
+            }
+        }
+        result.append("]");
+        return String.format(result.toString());
     }
 }
