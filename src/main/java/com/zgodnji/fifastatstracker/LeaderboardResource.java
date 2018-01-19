@@ -1,7 +1,6 @@
 package com.zgodnji.fifastatstracker;
 
 import com.kumuluz.ee.discovery.annotations.DiscoverService;
-import jdk.nashorn.internal.parser.JSONParser;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -14,12 +13,11 @@ import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -183,7 +181,18 @@ public class LeaderboardResource {
 
         System.out.println("=====================");
 
-        System.out.println(buildLeaderboardJson(leaderboard));
+
+        for (int i = 0; i < leaderboard.size(); i++) {
+            for (int j = i+1; j < leaderboard.size(); j++) {
+                if(Integer.parseInt(leaderboard.get(i)[1]) < Integer.parseInt(leaderboard.get(j)[1])) {
+                    Collections.swap(leaderboard, i, j);
+                }
+            }
+        }
+
+        printLeaderboard(leaderboard);
+
+        buildLeaderboardJson(leaderboard);
 
         return Response.ok(buildLeaderboardJson(leaderboard)).build();
     }

@@ -10,6 +10,9 @@ kumuluzee:
   config:
     start-retry-delay-ms: 500
     max-retry-delay-ms: 900000
+  discovery:
+      ttl: 20
+      ping-interval: 15
 
 rest-config:
   string-property: Monday
